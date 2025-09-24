@@ -14,22 +14,34 @@ are effectively MEV, you can do some really interesting things with them. Like
 - Impress your friends
 - And more!
 
-[MevWallet]: https://github.com/blunt-instruments/MevWallet
-[Signet Orders]: https://signet.sh/docs/learn-about-signet/cross-chain-transfers/
+## App Examples
 
-## Main Examples
+- [`Morpho.sol`](./src/examples/Morpho.sol) - Contracts that allow you to drive
+  Morpho lending market positions using Signet Orders. This allows you to
+  supply, borrow, and lend Morpho positions on Ethereum from Signet instantly
+  and atomically.
+
+## Orders Examples
 
 - [`SignetStd.sol`](./src/SignetStd.sol) - A simple contract that
   auto-configures Signet system parameters, based on the chain id.
 - [`Flash.sol`](./src/examples/Flash.sol) - Allows your contract to flash borrow
-  any asset (provided some searcher will provide it). Flash loans work by having an input and output of the same asset. The Output is then used as the Input to its own Order. This is pretty neat 🎀
+  any asset (provided some searcher will provide it). Flash loans work by
+  having an input and output of the same asset. The Output is then used as the
+  Input to its own Order. This is pretty neat 🎀
 - [`GetOut.sol`](./src/examples/GetOut.sol) - A shortcut contract for
   exiting Signet (by offering searchers a 50 bps fee).
 - [`PayMe.sol`](./src/examples/PayMe.sol) - Payment gating for smart contracts,
-  using a Signet Order with no inputs. These ensures that contract execution is invalid unless SOMEONE has filled the Order. Unlike traditional payment gates that check `msg.value`, this does NOT require the calling contract to manage cash flow. Instead _any third party_ can fill the order. The calling contract can be blind to the payment. This greatly simplifies contract logic required
+  using a Signet Order with no inputs. These ensures that contract execution is
+  invalid unless SOMEONE has filled the Order. Unlike traditional payment gates
+  that check `msg.value`, this does NOT require the calling contract to manage
+  cash flow. Instead _any third party_ can fill the order. The calling contract
+  can be blind to the payment. This greatly simplifies contract logic required
   to implement payment gates.
 - [`PayYou.sol`](./src/examples/PayYou.sol) - The opposite of payment gating,
-  this allows a contract to generate MEV by offering a Signet Order with no outputs. This payment becomes a bounty for calling the contract, and functions as an incentivized scheduling system.
+  this allows a contract to generate MEV by offering a Signet Order with no
+  outputs. This payment becomes a bounty for calling the contract, and
+  functions as an incentivized scheduling system.
 
 ## Basic Repo Instructions
 
@@ -50,3 +62,6 @@ $ forge test
 ```shell
 $ forge fmt
 ```
+
+[MevWallet]: https://github.com/blunt-instruments/MevWallet
+[Signet Orders]: https://signet.sh/docs/learn-about-signet/cross-chain-transfers/
