@@ -245,7 +245,12 @@ contract HosyMorphoBorrow is HostMorphoUser {
 
     function transferFrom(address filler, address onBehalf, uint256 amount) external returns (bool) {
         // borrow some amount of loanToken
-        morpho.borrow(loadParams(), amount, 0, onBehalf, filler);
+        morpho.borrow(loadParams(), amount, 0, onBehalf, address(this));
+
+        // User logic to use the tokens goes here.
+        // Could send the tokens to the rollup via Passage, or do something
+        // else :)
+
         return true;
     }
 }
