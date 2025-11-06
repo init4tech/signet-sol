@@ -16,7 +16,7 @@ are effectively MEV, you can do some really interesting things with them. Like
 
 ## App Examples
 
-- [`Morpho.sol`](./src/examples/Morpho.sol) - Contracts that allow you to drive
+- [`Morpho.sol`](./src/apps/Morpho.sol) - Contracts that allow you to drive
   Morpho lending market positions using Signet Orders. This allows you to
   supply, borrow, and lend Morpho positions on Ethereum from Signet instantly
   and atomically.
