@@ -249,9 +249,11 @@ contract HosyMorphoBorrow is HostMorphoUser {
         // borrow some amount of loanToken
         MORPHO.borrow(loadParams(), amount, 0, onBehalf, address(this));
 
+        // TODO: complete implementation
         // User logic to use the tokens goes here.
         // Could send the tokens to the rollup via Passage, or do something
         // else :)
+        filler;
 
         return true;
     }
