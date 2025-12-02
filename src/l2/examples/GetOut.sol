@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {SignetStd} from "../SignetStd.sol";
+import {SignetL2} from "../Signet.sol";
 
 /// @title GetOut
 /// @author init4
@@ -10,7 +10,7 @@ import {SignetStd} from "../SignetStd.sol";
 ///         to USDC on the host network.
 /// @dev This contract inherits the SignetStd contract and automatically
 ///      configures rollup constants on construction.
-contract GetOut is SignetStd {
+contract GetOut is SignetL2 {
     /// @notice Thrown when no value is sent to the contract.
     error MissingValue();
 
@@ -30,7 +30,7 @@ contract GetOut is SignetStd {
         uint256 desired = msg.value * 995 / 1000; // 0.5% fee
 
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
-        inputs[0] = makeInput(NATIVE_ASSET, msg.value);
+        inputs[0] = makeEthInput(msg.value);
 
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = hostUsdcOutput(desired, msg.sender);

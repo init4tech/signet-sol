@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 
 import {IMorpho, MarketParams} from "../interfaces/IMorpho.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {SignetStd} from "../SignetStd.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SignetL2} from "../l2/Signet.sol";
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {Passage} from "zenith/src/passage/Passage.sol";
 
 // How this works:
 // - The Signet Orders system calls `transferFrom` and check for the presence
@@ -38,68 +38,70 @@ import {Passage} from "zenith/src/passage/Passage.sol";
 
 // The Rollup contract creates orders to interact with Morpho on host net via
 // the shortcut.
-contract UseMorpho is SignetStd {
+contract UseMorpho is SignetL2 {
+    using SafeERC20 for IERC20;
+
     /// @dev Address of the shortcut on the host chain.
-    address immutable repayShortcut;
-    address immutable supplyShortcut;
-    address immutable borrowShortcut;
+    address immutable REPAY_SHORTCUT;
+    address immutable SUPPLY_SHORTCUT;
+    address immutable BORROW_SHORTCUT;
 
-    address immutable hostLoanToken;
-    address immutable hostCollateralToken;
+    address immutable HOST_LOAN_TOKEN;
+    address immutable HOST_COLLATERAL_TOKEN;
 
-    IERC20 immutable ruLoanToken;
-    IERC20 immutable ruCollateralToken;
+    IERC20 immutable RU_LOAN_TOKEN;
+    IERC20 immutable RU_COLLATERAL_TOKEN;
 
     constructor(address _repayShortcut, address _supplyShortcut, address _hostLoan, address _hostCollateral)
-        SignetStd()
+        SignetL2()
     {
-        repayShortcut = _repayShortcut;
-        supplyShortcut = _supplyShortcut;
+        REPAY_SHORTCUT = _repayShortcut;
+        SUPPLY_SHORTCUT = _supplyShortcut;
 
         // Autodetect rollup tokens based on token addresses on host network.
-        hostLoanToken = _hostLoan;
-        hostCollateralToken = _hostCollateral;
+        HOST_LOAN_TOKEN = _hostLoan;
+        HOST_COLLATERAL_TOKEN = _hostCollateral;
         if (_hostLoan == HOST_WETH) {
-            ruLoanToken = WETH;
+            RU_LOAN_TOKEN = WETH;
         } else if (_hostLoan == HOST_WBTC) {
-            ruLoanToken = WBTC;
+            RU_LOAN_TOKEN = WBTC;
         } else if (_hostLoan == HOST_USDC || _hostLoan == HOST_USDT) {
-            ruLoanToken = WUSD;
+            RU_LOAN_TOKEN = WUSD;
         } else {
             revert("Unsupported loan token");
         }
         if (_hostCollateral == HOST_WETH) {
-            ruCollateralToken = WETH;
+            RU_COLLATERAL_TOKEN = WETH;
         } else if (_hostCollateral == HOST_WBTC) {
-            ruCollateralToken = WBTC;
+            RU_COLLATERAL_TOKEN = WBTC;
         } else if (_hostCollateral == HOST_USDC || _hostCollateral == HOST_USDT) {
-            ruCollateralToken = WUSD;
+            RU_COLLATERAL_TOKEN = WUSD;
         } else {
             revert("Unsupported collateral token");
         }
 
         // Pre-emptively approve the Orders contract to spend our tokens.
-        ruLoanToken.approve(address(ORDERS), type(uint256).max);
-        ruCollateralToken.approve(address(ORDERS), type(uint256).max);
+        RU_LOAN_TOKEN.approve(address(ORDERS), type(uint256).max);
+        RU_COLLATERAL_TOKEN.approve(address(ORDERS), type(uint256).max);
     }
 
     // Supply some amount of the collateral token on behalf of the user.
     function supplyCollateral(address onBehalf, uint256 amount) public {
         if (amount > 0) {
-            ruCollateralToken.transferFrom(msg.sender, address(this), amount);
+            RU_COLLATERAL_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
         }
 
         // the amount is whatever our current balance is
-        amount = ruCollateralToken.balanceOf(address(this));
+        amount = RU_COLLATERAL_TOKEN.balanceOf(address(this));
 
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
-        inputs[0] = makeInput(address(ruCollateralToken), amount);
+        inputs[0] = makeInput(address(RU_COLLATERAL_TOKEN), amount);
 
         // The first output pays the collateral token to the shortcut.
         // The second output calls the shortcut to supply the collateral.
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](2);
-        outputs[0] = makeHostOutput(address(hostCollateralToken), amount, supplyShortcut);
-        outputs[1] = makeHostOutput(supplyShortcut, amount, onBehalf);
+        outputs[0] = makeHostOutput(address(HOST_COLLATERAL_TOKEN), amount, SUPPLY_SHORTCUT);
+        outputs[1] = makeHostOutput(SUPPLY_SHORTCUT, amount, onBehalf);
 
         ORDERS.initiate(
             block.timestamp, // no deadline
@@ -111,20 +113,20 @@ contract UseMorpho is SignetStd {
     // Repay some amount of the loan token on behalf of the user.
     function repay(address onBehalf, uint256 amount) public {
         if (amount > 0) {
-            ruLoanToken.transferFrom(msg.sender, address(this), amount);
+            RU_LOAN_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
         }
 
         // Send all tokens.
-        amount = ruLoanToken.balanceOf(address(this));
+        amount = RU_LOAN_TOKEN.balanceOf(address(this));
 
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
-        inputs[0] = makeInput(address(ruLoanToken), amount);
+        inputs[0] = makeInput(address(RU_LOAN_TOKEN), amount);
 
         // The first output pays the loan token to the shortcut.
         // The second output calls the shortcut to repay the loan.
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](2);
-        outputs[0] = makeHostOutput(address(hostLoanToken), amount, repayShortcut);
-        outputs[1] = makeHostOutput(repayShortcut, amount, onBehalf);
+        outputs[0] = makeHostOutput(address(HOST_LOAN_TOKEN), amount, REPAY_SHORTCUT);
+        outputs[1] = makeHostOutput(REPAY_SHORTCUT, amount, onBehalf);
 
         ORDERS.initiate(
             block.timestamp, // no deadline
@@ -140,8 +142,8 @@ contract UseMorpho is SignetStd {
         // The first output calls the shortcut to borrow the loan.
         // The second output sends the loan token to the user on the rollup.
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](2);
-        outputs[0] = makeHostOutput(borrowShortcut, amount, onBehalf);
-        outputs[1] = makeRollupOutput(address(ruLoanToken), amount, msg.sender);
+        outputs[0] = makeHostOutput(BORROW_SHORTCUT, amount, onBehalf);
+        outputs[1] = makeRollupOutput(address(RU_LOAN_TOKEN), amount, msg.sender);
 
         ORDERS.initiate(
             block.timestamp, // no deadline
@@ -160,29 +162,29 @@ contract UseMorpho is SignetStd {
 }
 
 abstract contract HostMorphoUser {
-    IMorpho immutable morpho;
+    IMorpho immutable MORPHO;
 
     // This is an unrolled MarketParams struct.
-    IERC20 immutable loanToken;
-    IERC20 immutable collateralToken;
+    IERC20 immutable LOAN_TOKEN;
+    IERC20 immutable COLLATERAL_TOKEN;
 
-    address immutable oracle;
-    address immutable irm;
-    uint256 immutable lltv;
+    address immutable ORACLE;
+    address immutable IRM;
+    uint256 immutable LLTV;
 
     error InsufficentTokensReceived(uint256 received, uint256 required);
 
     constructor(IMorpho _morpho, MarketParams memory _params) {
-        morpho = _morpho;
+        MORPHO = _morpho;
 
-        loanToken = IERC20(_params.loanToken);
-        collateralToken = IERC20(_params.collateralToken);
-        oracle = _params.oracle;
-        irm = _params.irm;
-        lltv = _params.lltv;
+        LOAN_TOKEN = IERC20(_params.loanToken);
+        COLLATERAL_TOKEN = IERC20(_params.collateralToken);
+        ORACLE = _params.oracle;
+        IRM = _params.irm;
+        LLTV = _params.lltv;
 
-        loanToken.approve(address(_morpho), type(uint256).max);
-        collateralToken.approve(address(_morpho), type(uint256).max);
+        LOAN_TOKEN.approve(address(_morpho), type(uint256).max);
+        COLLATERAL_TOKEN.approve(address(_morpho), type(uint256).max);
     }
 
     function checkReceived(uint256 received, uint256 required) internal pure {
@@ -192,11 +194,11 @@ abstract contract HostMorphoUser {
     }
 
     function loadParams() internal view returns (MarketParams memory params) {
-        params.loanToken = address(loanToken);
-        params.collateralToken = address(collateralToken);
-        params.oracle = oracle;
-        params.irm = irm;
-        params.lltv = lltv;
+        params.loanToken = address(LOAN_TOKEN);
+        params.collateralToken = address(COLLATERAL_TOKEN);
+        params.oracle = ORACLE;
+        params.irm = IRM;
+        params.lltv = LLTV;
     }
 }
 
@@ -208,9 +210,9 @@ contract HostMorphoRepay is HostMorphoUser {
     /// Uses the ERC20 transferFrom interface to invoke contract logic. This
     /// allows us to invoke logic from the Orders contract
     function transferFrom(address, address recipient, uint256 amount) external returns (bool) {
-        uint256 loanTokenBalance = loanToken.balanceOf(address(this));
+        uint256 loanTokenBalance = LOAN_TOKEN.balanceOf(address(this));
         checkReceived(loanTokenBalance, amount);
-        morpho.repay(loadParams(), loanTokenBalance, 0, recipient, "");
+        MORPHO.repay(loadParams(), loanTokenBalance, 0, recipient, "");
         return true;
     }
 }
@@ -221,11 +223,11 @@ contract HostMorphoSupply is HostMorphoUser {
     /// Uses the ERC20 transferFrom interface to invoke contract logic. This
     /// allows us to invoke logic from the Orders contract
     function transferFrom(address, address recipient, uint256 amount) external returns (bool) {
-        uint256 collateralTokenBalance = collateralToken.balanceOf(address(this));
+        uint256 collateralTokenBalance = COLLATERAL_TOKEN.balanceOf(address(this));
 
         checkReceived(collateralTokenBalance, amount);
 
-        morpho.supplyCollateral(loadParams(), collateralTokenBalance, recipient, "");
+        MORPHO.supplyCollateral(loadParams(), collateralTokenBalance, recipient, "");
 
         // Future extension:
         // borrow some amount of loanToken
@@ -245,7 +247,7 @@ contract HosyMorphoBorrow is HostMorphoUser {
 
     function transferFrom(address filler, address onBehalf, uint256 amount) external returns (bool) {
         // borrow some amount of loanToken
-        morpho.borrow(loadParams(), amount, 0, onBehalf, address(this));
+        MORPHO.borrow(loadParams(), amount, 0, onBehalf, address(this));
 
         // User logic to use the tokens goes here.
         // Could send the tokens to the rollup via Passage, or do something

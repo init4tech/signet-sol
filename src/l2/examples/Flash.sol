@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {SignetStd} from "../SignetStd.sol";
+import {SignetL2} from "../Signet.sol";
 
 /// @notice This contract provides a modifier that allows functions to
 ///         utilize liquidity only during the duration of a function.
-abstract contract Flash is SignetStd {
+abstract contract Flash is SignetL2 {
     /// @notice This modifier enables a contract to access some amount only
     ///         during function execution - the amount is received by the
     ///         contract before the function executes, then is sent directly
@@ -18,7 +18,10 @@ abstract contract Flash is SignetStd {
     /// @param amount The amount of the asset to be flash held.
     modifier flash(address asset, uint256 amount) {
         _;
+        _flash(asset, amount);
+    }
 
+    function _flash(address asset, uint256 amount) internal {
         // Output is received *before* the modified function is called
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = makeRollupOutput(asset, amount, address(this));

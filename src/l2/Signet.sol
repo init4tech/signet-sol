@@ -5,12 +5,11 @@ import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 import {RollupPassage} from "zenith/src/passage/RollupPassage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import {PecorinoConstants} from "./chains/Pecorino.sol";
+import {PecorinoConstants} from "../chains/Pecorino.sol";
 
-contract SignetStd {
-    /// @notice The native asset address, used as a sentinel for native USD on
-    ///         the rollup, or native ETH on the host.
-    address constant NATIVE_ASSET = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+contract SignetL2 {
+    /// @notice Sentinal value for the native asset in order inputs/outputs
+    address constant NATIVE_ASSET = address(0);
 
     /// @notice The chain ID of the host network.
     uint32 internal immutable HOST_CHAIN_ID;
@@ -35,6 +34,9 @@ contract SignetStd {
     address internal immutable HOST_WBTC;
     /// @notice The WETH token address on the host network.
     address internal immutable HOST_WETH;
+
+    /// @notice Error for unsupported chain IDs.
+    error UnsupportedChain(uint256);
 
     constructor() {
         // Auto-configure based on the chain ID.
@@ -63,6 +65,14 @@ contract SignetStd {
     /// @return input The created Input struct.
     function makeInput(address token, uint256 amount) internal pure returns (RollupOrders.Input memory input) {
         input.token = token;
+        input.amount = amount;
+    }
+
+    /// @notice Creates an Input struct for the native asset (ETH).
+    /// @param amount The amount of the native asset (in wei).
+    /// @return input The created Input struct for the native asset.
+    function makeEthInput(uint256 amount) internal pure returns (RollupOrders.Input memory input) {
+        input.token = address(0);
         input.amount = amount;
     }
 
@@ -166,6 +176,6 @@ contract SignetStd {
         view
         returns (RollupOrders.Output memory output)
     {
-        return makeHostOutput(NATIVE_ASSET, amount, recipient);
+        return makeHostOutput(address(0), amount, recipient);
     }
 }
