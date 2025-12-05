@@ -35,9 +35,7 @@ contract GetOut is SignetStd {
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = hostUsdcOutput(desired, msg.sender);
 
-        ORDERS.initiate{
-            value: msg.value
-        }(
+        ORDERS.initiate{value: msg.value}(
             block.timestamp, // this is equivalent to no deadline
             inputs,
             outputs

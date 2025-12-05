@@ -31,9 +31,7 @@ abstract contract PayYou is SignetStd {
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
         inputs[0] = makeInput(asset, amount);
 
-        ORDERS.initiate{
-            value: amount
-        }(
+        ORDERS.initiate{value: amount}(
             block.timestamp, // no deadline
             inputs,
             new RollupOrders.Output[](0) // no outputs
