@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {SignetStd} from "../SignetStd.sol";
+import {SignetL2} from "../Signet.sol";
 
 /// @notice This contract provides a modifier that allows functions to be gated
 ///         by requiring a payment of a specified amount of native asset.
-abstract contract PayMe is SignetStd {
+abstract contract PayMe is SignetL2 {
     /// @notice This modifier crates an order with no input, that pays the
     ///         specified amount of native asset to the contract. It can be used
     ///         to gate access to payment-gate functions.
@@ -19,9 +19,14 @@ abstract contract PayMe is SignetStd {
     /// transaction by deducting it from the payment amount.
     modifier payMeSubsidizedGas(uint256 amount) {
         uint256 pre = gasleft();
-        uint256 gp = tx.gasprice;
         _;
+        _payMeSubsidizedGasAfter(pre, amount);
+    }
+
+    /// @notice This silences spurious foundry warnings.
+    function _payMeSubsidizedGasAfter(uint256 pre, uint256 amount) internal {
         uint256 post = gasleft();
+        uint256 gp = tx.gasprice;
         uint256 loot = amount - (gp * (pre - post));
         demandPayment(NATIVE_ASSET, loot);
     }
