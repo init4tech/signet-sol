@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {HostOrders} from "zenith/src/orders/HostOrders.sol";
 import {Passage} from "zenith/src/passage/Passage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IWETH} from "../interfaces/IWETH.sol";
 
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 import {PecorinoConstants} from "../chains/Pecorino.sol";
@@ -18,7 +19,7 @@ abstract contract SignetL1 {
     HostOrders internal immutable ORDERS;
 
     /// @notice The WETH token address.
-    IERC20 internal immutable WETH;
+    IWETH internal immutable WETH;
     /// @notice The WBTC token address.
     IERC20 internal immutable WBTC;
     /// @notice The USDC token address.
@@ -41,7 +42,7 @@ abstract contract SignetL1 {
             PASSAGE = PecorinoConstants.HOST_PASSAGE;
             ORDERS = PecorinoConstants.HOST_ORDERS;
 
-            WETH = IERC20(PecorinoConstants.HOST_WETH);
+            WETH = IWETH(PecorinoConstants.HOST_WETH);
             WBTC = IERC20(PecorinoConstants.HOST_WBTC);
             USDC = IERC20(PecorinoConstants.HOST_USDC);
             USDT = IERC20(PecorinoConstants.HOST_USDT);
@@ -73,6 +74,7 @@ abstract contract SignetL1 {
         return AddressAliasHelper.applyL1ToL2Alias(address(this));
     }
 
+    /// @notice Helper to create an output struct.
     function makeOutput(address token, uint256 amount, address recipient)
         internal
         pure
@@ -84,36 +86,49 @@ abstract contract SignetL1 {
         output.chainId = PecorinoConstants.HOST_CHAIN_ID;
     }
 
+    /// @notice Helper to create an Output struct for usdc.
     function usdcOutput(uint256 amount, address recipient) internal view returns (HostOrders.Output memory output) {
         return makeOutput(address(USDC), amount, recipient);
     }
 
+    /// @notice Helper to create an Output struct for usdt.
     function usdtOutput(uint256 amount, address recipient) internal view returns (HostOrders.Output memory output) {
         return makeOutput(address(USDT), amount, recipient);
     }
 
+    /// @notice Helper to create an Output struct for wbtc.
     function wbtcOutput(uint256 amount, address recipient) internal view returns (HostOrders.Output memory output) {
         return makeOutput(address(WBTC), amount, recipient);
     }
 
+    /// @notice Helper to create an Output struct for weth.
     function wethOutput(uint256 amount, address recipient) internal view returns (HostOrders.Output memory output) {
         return makeOutput(address(WETH), amount, recipient);
     }
 
+    /// @notice Helper to create an Output struct for eth.
     function ethOutput(uint256 amount, address recipient) internal pure returns (HostOrders.Output memory output) {
         return makeOutput(NATIVE_ASSET, amount, recipient);
     }
 
-    function enterSignetToken(address token, uint256 amount) internal {
+    /// @notice Send tokens into Signet via the Passage contract.
+    function tokensToSignet(address token, uint256 amount) internal {
         if (token == NATIVE_ASSET) {
-            enterSignetEth(amount);
+            ethToSignet(amount);
             return;
         }
         IERC20(token).approve(address(PASSAGE), amount);
         PASSAGE.enterToken(selfOnL2(), token, amount);
     }
 
-    function enterSignetEth(uint256 amount) internal {
+    /// @notice Send ETH into Signet via the Passage contract.
+    function ethToSignet(uint256 amount) internal {
         PASSAGE.enter{value: amount}(selfOnL2());
+    }
+
+    /// @notice Send WETH into Signet via the Passage contract.
+    function wethToSignet(uint256 amount) internal {
+        WETH.withdraw(amount);
+        ethToSignet(amount);
     }
 }
