@@ -54,17 +54,9 @@ abstract contract SignetL1 {
         }
     }
 
-    /// @notice This is used to know whether to alias. It should generally
-    /// return false. If writing an ephemeral contract, override to return true.
-    function isEphemeral() internal pure virtual returns (bool) {
-        return false;
-    }
-
-    /// @notice Returns
-    function selfOnL2() internal view returns (address) {
-        if (isEphemeral()) {
-            return address(this);
-        }
+    /// @notice Returns the address of this contract on L2, applying an
+    /// address alias.
+    function selfOnL2() internal view virtual returns (address) {
         if (address(this).code.length == 23) {
             bool is7702;
             assembly {
