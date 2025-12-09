@@ -5,9 +5,14 @@ import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import {SignetL2} from "../../l2/Signet.sol";
-import {BurnMintERC20} from "../../vendor/BurnMintERC20.sol";
+import {SignetL2} from "../l2/Signet.sol";
+import {BurnMintERC20} from "../vendor/BurnMintERC20.sol";
 
+/// @notice An example contract, implementing LIDO staking from Signet L2, with
+/// support for CCIP teleporting.
+/// Allows bridging two ways:
+/// - Signet native bridging with Orders.
+/// - CCIP Teleporting via support for the CCT standard.
 contract LidoL2 is SignetL2, BurnMintERC20 {
     using SafeERC20 for IERC20;
 

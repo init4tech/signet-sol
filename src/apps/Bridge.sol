@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 import {SimpleERC20} from "simple-erc20/SimpleERC20.sol";
 
-import {SignetL2} from "../../l2/Signet.sol";
+import {SignetL2} from "../l2/Signet.sol";
 
 abstract contract BridgeL2 is SignetL2, SimpleERC20 {
     address immutable HOST_ASSET;
