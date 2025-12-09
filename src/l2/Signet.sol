@@ -6,6 +6,7 @@ import {RollupPassage} from "zenith/src/passage/RollupPassage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {PecorinoConstants} from "../chains/Pecorino.sol";
+import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 
 contract SignetL2 {
     /// @notice Sentinal value for the native asset in order inputs/outputs
@@ -18,6 +19,9 @@ contract SignetL2 {
     RollupPassage internal immutable PASSAGE;
     /// @notice The Rollup Orders contract.
     RollupOrders internal immutable ORDERS;
+
+    /// @notice The address of the Rollup Passage on the host network.
+    address immutable HOST_PASSAGE;
 
     /// @notice The WETH token address.
     IERC20 internal immutable WETH;
@@ -43,8 +47,10 @@ contract SignetL2 {
         if (block.chainid == PecorinoConstants.ROLLUP_CHAIN_ID) {
             HOST_CHAIN_ID = PecorinoConstants.HOST_CHAIN_ID;
 
-            PASSAGE = PecorinoConstants.PECORINO_ROLLUP_PASSAGE;
-            ORDERS = PecorinoConstants.PECORINO_ROLLUP_ORDERS;
+            HOST_PASSAGE = address(PecorinoConstants.HOST_PASSAGE);
+
+            PASSAGE = PecorinoConstants.ROLLUP_PASSAGE;
+            ORDERS = PecorinoConstants.ROLLUP_ORDERS;
 
             WETH = PecorinoConstants.WETH;
             WBTC = PecorinoConstants.WBTC;
@@ -59,6 +65,12 @@ contract SignetL2 {
         }
     }
 
+    /// @notice Gets the aliased address of this contracat, representing itself
+    /// on L1. Use with caustion.
+    function aliasedSelf() internal view returns (address) {
+        return AddressAliasHelper.applyL1ToL2Alias(address(this));
+    }
+
     /// @notice Creates an Input struct for the RollupOrders.
     /// @param token The address of the token.
     /// @param amount The amount of the token.
@@ -68,11 +80,21 @@ contract SignetL2 {
         input.amount = amount;
     }
 
-    /// @notice Creates an Input struct for the native asset (ETH).
+    /// @notice Creates an Input struct for the native asset (USD).
     /// @param amount The amount of the native asset (in wei).
     /// @return input The created Input struct for the native asset.
-    function makeEthInput(uint256 amount) internal pure returns (RollupOrders.Input memory input) {
+    function makeUsdInput(uint256 amount) internal pure returns (RollupOrders.Input memory input) {
         input.token = address(0);
+        input.amount = amount;
+    }
+
+    function makeWethInput(uint256 amount) internal view returns (RollupOrders.Input memory input) {
+        input.token = address(WETH);
+        input.amount = amount;
+    }
+
+    function makeWbtcInput(uint256 amount) internal view returns (RollupOrders.Input memory input) {
+        input.token = address(WBTC);
         input.amount = amount;
     }
 
