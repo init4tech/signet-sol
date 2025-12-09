@@ -8,15 +8,12 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {SignetL2} from "../../l2/Signet.sol";
 import {BurnMintERC20} from "../../vendor/BurnMintERC20.sol";
 
-
-contract LidoL2 is SignetL2(), BurnMintERC20 {
+contract LidoL2 is SignetL2, BurnMintERC20 {
     using SafeERC20 for IERC20;
 
     address public immutable HOST_WSTETH;
 
-    constructor(address _hostWsteth)
-        BurnMintERC20("Signet Lido Staked Ether", "stETH", 18, 0, 0)
-    {
+    constructor(address _hostWsteth) BurnMintERC20("Signet Lido Staked Ether", "stETH", 18, 0, 0) {
         HOST_WSTETH = _hostWsteth;
         WETH.forceApprove(address(ORDERS), type(uint256).max);
     }

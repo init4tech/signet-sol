@@ -21,138 +21,128 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 /// @notice A basic ERC20 compatible token contract with burn and minting roles.
 /// @dev The total supply can be limited during deployment.
 contract BurnMintERC20 is IBurnMintERC20, IGetCCIPAdmin, IERC165, ERC20Burnable, AccessControl {
-  error MaxSupplyExceeded(uint256 supplyAfterMint);
-  error InvalidRecipient(address recipient);
+    error MaxSupplyExceeded(uint256 supplyAfterMint);
+    error InvalidRecipient(address recipient);
 
-  event CCIPAdminTransferred(address indexed previousAdmin, address indexed newAdmin);
+    event CCIPAdminTransferred(address indexed previousAdmin, address indexed newAdmin);
 
-  /// @dev The number of decimals for the token
-  uint8 internal immutable i_decimals;
+    /// @dev The number of decimals for the token
+    uint8 internal immutable i_decimals;
 
-  /// @dev The maximum supply of the token, 0 if unlimited
-  uint256 internal immutable i_maxSupply;
+    /// @dev The maximum supply of the token, 0 if unlimited
+    uint256 internal immutable i_maxSupply;
 
-  /// @dev the CCIPAdmin can be used to register with the CCIP token admin registry, but has no other special powers,
-  /// and can only be transferred by the owner.
-  address internal s_ccipAdmin;
+    /// @dev the CCIPAdmin can be used to register with the CCIP token admin registry, but has no other special powers,
+    /// and can only be transferred by the owner.
+    address internal s_ccipAdmin;
 
-  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-  bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
-  /// @dev the underscores in parameter names are used to suppress compiler warnings about shadowing ERC20 functions
-  constructor(
-    string memory name,
-    string memory symbol,
-    uint8 decimals_,
-    uint256 maxSupply_,
-    uint256 preMint
-  ) ERC20(name, symbol) {
-    i_decimals = decimals_;
-    i_maxSupply = maxSupply_;
+    /// @dev the underscores in parameter names are used to suppress compiler warnings about shadowing ERC20 functions
+    constructor(string memory name, string memory symbol, uint8 decimals_, uint256 maxSupply_, uint256 preMint)
+        ERC20(name, symbol)
+    {
+        i_decimals = decimals_;
+        i_maxSupply = maxSupply_;
 
-    s_ccipAdmin = msg.sender;
+        s_ccipAdmin = msg.sender;
 
-    // Mint the initial supply to the new Owner, saving gas by not calling if the mint amount is zero
-    if (preMint != 0) _mint(msg.sender, preMint);
+        // Mint the initial supply to the new Owner, saving gas by not calling if the mint amount is zero
+        if (preMint != 0) _mint(msg.sender, preMint);
 
-    // Set up the owner as the initial minter and burner
-    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-  }
+        // Set up the owner as the initial minter and burner
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 
-  /// @inheritdoc IERC165
-  function supportsInterface(
-    bytes4 interfaceId
-  ) public pure virtual override(AccessControl, IERC165) returns (bool) {
-    return interfaceId == type(IERC20).interfaceId || interfaceId == type(IBurnMintERC20).interfaceId
-      || interfaceId == type(IERC165).interfaceId || interfaceId == type(IAccessControl).interfaceId
-      || interfaceId == type(IGetCCIPAdmin).interfaceId;
-  }
+    /// @inheritdoc IERC165
+    function supportsInterface(bytes4 interfaceId) public pure virtual override(AccessControl, IERC165) returns (bool) {
+        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IBurnMintERC20).interfaceId
+            || interfaceId == type(IERC165).interfaceId || interfaceId == type(IAccessControl).interfaceId
+            || interfaceId == type(IGetCCIPAdmin).interfaceId;
+    }
 
-  // ================================================================
-  // │                            ERC20                             │
-  // ================================================================
+    // ================================================================
+    // │                            ERC20                             │
+    // ================================================================
 
-  /// @dev Returns the number of decimals used in its user representation.
-  function decimals() public view virtual override returns (uint8) {
-    return i_decimals;
-  }
+    /// @dev Returns the number of decimals used in its user representation.
+    function decimals() public view virtual override returns (uint8) {
+        return i_decimals;
+    }
 
-  /// @dev Returns the max supply of the token, 0 if unlimited.
-  function maxSupply() public view virtual returns (uint256) {
-    return i_maxSupply;
-  }
+    /// @dev Returns the max supply of the token, 0 if unlimited.
+    function maxSupply() public view virtual returns (uint256) {
+        return i_maxSupply;
+    }
 
-  // ================================================================
-  // │                      Burning & minting                       │
-  // ================================================================
+    // ================================================================
+    // │                      Burning & minting                       │
+    // ================================================================
 
-  /// @inheritdoc ERC20Burnable
-  /// @dev Uses OZ ERC20 _burn to disallow burning from address(0).
-  /// @dev Decreases the total supply.
-  function burn(
-    uint256 amount
-  ) public virtual override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE) {
-    super.burn(amount);
-  }
+    /// @inheritdoc ERC20Burnable
+    /// @dev Uses OZ ERC20 _burn to disallow burning from address(0).
+    /// @dev Decreases the total supply.
+    function burn(uint256 amount) public virtual override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE) {
+        super.burn(amount);
+    }
 
-  /// @inheritdoc IBurnMintERC20
-  /// @dev Alias for BurnFrom for compatibility with the older naming convention.
-  /// @dev Uses burnFrom for all validation & logic.
-  function burn(address account, uint256 amount) public virtual override {
-    burnFrom(account, amount);
-  }
+    /// @inheritdoc IBurnMintERC20
+    /// @dev Alias for BurnFrom for compatibility with the older naming convention.
+    /// @dev Uses burnFrom for all validation & logic.
+    function burn(address account, uint256 amount) public virtual override {
+        burnFrom(account, amount);
+    }
 
-  /// @inheritdoc ERC20Burnable
-  /// @dev Uses OZ ERC20 _burn to disallow burning from address(0).
-  /// @dev Decreases the total supply.
-  function burnFrom(
-    address account,
-    uint256 amount
-  ) public virtual override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE) {
-    super.burnFrom(account, amount);
-  }
+    /// @inheritdoc ERC20Burnable
+    /// @dev Uses OZ ERC20 _burn to disallow burning from address(0).
+    /// @dev Decreases the total supply.
+    function burnFrom(address account, uint256 amount)
+        public
+        virtual
+        override(IBurnMintERC20, ERC20Burnable)
+        onlyRole(BURNER_ROLE)
+    {
+        super.burnFrom(account, amount);
+    }
 
-  /// @inheritdoc IBurnMintERC20
-  /// @dev Uses OZ ERC20 _mint to disallow minting to address(0).
-  /// @dev Disallows minting to address(this)
-  /// @dev Increases the total supply.
-  function mint(address account, uint256 amount) external virtual override onlyRole(MINTER_ROLE) {
-    if (account == address(this)) revert InvalidRecipient(account);
-    if (i_maxSupply != 0 && totalSupply() + amount > i_maxSupply) revert MaxSupplyExceeded(totalSupply() + amount);
+    /// @inheritdoc IBurnMintERC20
+    /// @dev Uses OZ ERC20 _mint to disallow minting to address(0).
+    /// @dev Disallows minting to address(this)
+    /// @dev Increases the total supply.
+    function mint(address account, uint256 amount) external virtual override onlyRole(MINTER_ROLE) {
+        if (account == address(this)) revert InvalidRecipient(account);
+        if (i_maxSupply != 0 && totalSupply() + amount > i_maxSupply) revert MaxSupplyExceeded(totalSupply() + amount);
 
-    _mint(account, amount);
-  }
+        _mint(account, amount);
+    }
 
-  // ================================================================
-  // │                            Roles                             │
-  // ================================================================
+    // ================================================================
+    // │                            Roles                             │
+    // ================================================================
 
-  /// @notice grants both mint and burn roles to `burnAndMinter`.
-  /// @dev calls public functions so this function does not require
-  /// access controls. This is handled in the inner functions.
-  function grantMintAndBurnRoles(
-    address burnAndMinter
-  ) external virtual {
-    grantRole(MINTER_ROLE, burnAndMinter);
-    grantRole(BURNER_ROLE, burnAndMinter);
-  }
+    /// @notice grants both mint and burn roles to `burnAndMinter`.
+    /// @dev calls public functions so this function does not require
+    /// access controls. This is handled in the inner functions.
+    function grantMintAndBurnRoles(address burnAndMinter) external virtual {
+        grantRole(MINTER_ROLE, burnAndMinter);
+        grantRole(BURNER_ROLE, burnAndMinter);
+    }
 
-  /// @notice Returns the current CCIPAdmin
-  function getCCIPAdmin() external view virtual returns (address) {
-    return s_ccipAdmin;
-  }
+    /// @notice Returns the current CCIPAdmin
+    function getCCIPAdmin() external view virtual returns (address) {
+        return s_ccipAdmin;
+    }
 
-  /// @notice Transfers the CCIPAdmin role to a new address
-  /// @dev only the owner can call this function, NOT the current ccipAdmin, and 1-step ownership transfer is used.
-  /// @param newAdmin The address to transfer the CCIPAdmin role to. Setting to address(0) is a valid way to revoke
-  /// the role
-  function setCCIPAdmin(
-    address newAdmin
-  ) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
-    address currentAdmin = s_ccipAdmin;
+    /// @notice Transfers the CCIPAdmin role to a new address
+    /// @dev only the owner can call this function, NOT the current ccipAdmin, and 1-step ownership transfer is used.
+    /// @param newAdmin The address to transfer the CCIPAdmin role to. Setting to address(0) is a valid way to revoke
+    /// the role
+    function setCCIPAdmin(address newAdmin) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        address currentAdmin = s_ccipAdmin;
 
-    s_ccipAdmin = newAdmin;
+        s_ccipAdmin = newAdmin;
 
-    emit CCIPAdminTransferred(currentAdmin, newAdmin);
-  }
+        emit CCIPAdminTransferred(currentAdmin, newAdmin);
+    }
 }
