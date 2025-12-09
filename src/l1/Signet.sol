@@ -4,13 +4,16 @@ pragma solidity ^0.8.13;
 import {HostOrders} from "zenith/src/orders/HostOrders.sol";
 import {Passage} from "zenith/src/passage/Passage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IWETH} from "../interfaces/IWETH.sol";
 
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 import {PecorinoConstants} from "../chains/Pecorino.sol";
 
 abstract contract SignetL1 {
-    /// @notice Sentinal value for the native asset in order inputs/outputs
+    using SafeERC20 for IERC20;
+
+    /// @notice Sentinel value for the native asset in order inputs/outputs
     address constant NATIVE_ASSET = address(0);
 
     /// @notice The Passage address
@@ -58,11 +61,13 @@ abstract contract SignetL1 {
     /// @notice Returns the address of this contract on L2, applying an
     /// address alias.
     function selfOnL2() internal view virtual returns (address) {
-        if (address(this).code.length == 23) {
+        address self = address(this);
+        if (self.code.length == 23) {
             bool is7702;
+
             assembly {
                 let ptr := mload(0x40)
-                codecopy(ptr, 0, 0x20)
+                extcodecopy(self, ptr, 0, 0x20)
                 is7702 := eq(shr(232, mload(ptr)), 0xEF0100)
                 // clean the memory we used. Unnecessary, but good hygiene
                 mstore(ptr, 0x0)
@@ -117,7 +122,7 @@ abstract contract SignetL1 {
             ethToSignet(amount);
             return;
         }
-        IERC20(token).approve(address(PASSAGE), amount);
+        IERC20(token).forceApprove(address(PASSAGE), amount);
         PASSAGE.enterToken(selfOnL2(), token, amount);
     }
 
