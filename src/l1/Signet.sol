@@ -62,7 +62,7 @@ abstract contract SignetL1 {
             bool is7702;
             assembly {
                 let ptr := mload(0x40)
-                extcodecopy(caller(), ptr, 0, 0x20)
+                codecopy(ptr, 0, 0x20)
                 is7702 := eq(shr(232, mload(ptr)), 0xEF0100)
                 // clean the memory we used. Unnecessary, but good hygiene
                 mstore(ptr, 0x0)
