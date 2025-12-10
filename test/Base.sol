@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 
-import {PecorinoConstants} from "../src/chains/Pecorino.sol";
+import {ParmigianaConstants} from "../src/chains/Parmigiana.sol";
 
-contract PecorinoTest is Test {
+contract ParmigianaTest is Test {
     constructor() {
-        vm.chainId(PecorinoConstants.ROLLUP_CHAIN_ID);
+        vm.chainId(ParmigianaConstants.ROLLUP_CHAIN_ID);
     }
 }
 
