@@ -9,6 +9,7 @@ import {IWETH} from "../interfaces/IWETH.sol";
 
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 import {PecorinoConstants} from "../chains/Pecorino.sol";
+import {ParmigianaConstants} from "../chains/Parmigiana.sol";
 
 abstract contract SignetL1 {
     using SafeERC20 for IERC20;
@@ -41,7 +42,8 @@ abstract contract SignetL1 {
     error UnsupportedChain(uint256);
 
     constructor() {
-        if (block.chainid == PecorinoConstants.HOST_CHAIN_ID) {
+        uint256 chainId = block.chainid;
+        if (chainId == PecorinoConstants.HOST_CHAIN_ID) {
             PASSAGE = PecorinoConstants.HOST_PASSAGE;
             ORDERS = PecorinoConstants.HOST_ORDERS;
 
@@ -53,6 +55,18 @@ abstract contract SignetL1 {
             RU_WUSD = address(PecorinoConstants.WUSD);
             RU_WBTC = address(PecorinoConstants.WBTC);
             RU_WETH = address(PecorinoConstants.WETH);
+        } else if (chainId == ParmigianaConstants.HOST_CHAIN_ID) {
+            PASSAGE = ParmigianaConstants.HOST_PASSAGE;
+            ORDERS = ParmigianaConstants.HOST_ORDERS;
+
+            WETH = IWETH(ParmigianaConstants.HOST_WETH);
+            WBTC = IERC20(ParmigianaConstants.HOST_WBTC);
+            USDC = IERC20(ParmigianaConstants.HOST_USDC);
+            USDT = IERC20(ParmigianaConstants.HOST_USDT);
+
+            RU_WUSD = address(ParmigianaConstants.WUSD);
+            RU_WBTC = address(ParmigianaConstants.WBTC);
+            RU_WETH = address(ParmigianaConstants.WETH);
         } else {
             revert UnsupportedChain(block.chainid);
         }
