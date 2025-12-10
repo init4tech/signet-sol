@@ -12,6 +12,9 @@ contract SignetL2 {
     /// @notice Sentinal value for the native asset in order inputs/outputs
     address constant NATIVE_ASSET = address(0);
 
+    /// @notice System address that produces System minted tokens.
+    address constant TOKEN_MINTER = 0x00000000000000000000746f6b656E61646d696E;
+
     /// @notice The chain ID of the host network.
     uint32 internal immutable HOST_CHAIN_ID;
 

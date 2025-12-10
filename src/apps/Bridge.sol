@@ -2,25 +2,20 @@
 pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {SimpleERC20} from "simple-erc20/SimpleERC20.sol";
+import {BurnMintERC20} from "../vendor/BurnMintERC20.sol";
 
 import {SignetL2} from "../l2/Signet.sol";
 
-abstract contract BridgeL2 is SignetL2, SimpleERC20 {
+abstract contract BridgeL2 is SignetL2, BurnMintERC20 {
     /// @notice The address of the asset on the host chain.
     address immutable HOST_ASSET;
     /// @notice The address of the bank on the host chain. The bank holds the
     ///         asset while tokens are bridged into the rollup.
     address immutable HOST_BANK;
 
-    constructor(
-        address _hostAsset,
-        address _hostBank,
-        address _initialOwner,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) SimpleERC20(_initialOwner, _name, _symbol, _decimals) {
+    constructor(address _hostAsset, address _hostBank, string memory _name, string memory _symbol, uint8 _decimals)
+        BurnMintERC20(_name, _symbol, _decimals, 0, 0)
+    {
         HOST_ASSET = _hostAsset;
         HOST_BANK = _hostBank;
     }
