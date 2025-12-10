@@ -26,7 +26,7 @@ import {BurnMintERC20} from "../vendor/BurnMintERC20.sol";
 contract LidoL2 is SignetL2, BurnMintERC20 {
     using SafeERC20 for IERC20;
 
-/// @notice The WstETH token on the host.
+    /// @notice The WstETH token on the host.
     address public immutable HOST_WSTETH;
 
     constructor(address _hostWsteth) BurnMintERC20("Signet Lido Staked Ether", "stETH", 18, 0, 0) {
