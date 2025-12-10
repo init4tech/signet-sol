@@ -7,15 +7,17 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IWETH} from "../interfaces/IWETH.sol";
 
-import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
-import {PecorinoConstants} from "../chains/Pecorino.sol";
 import {ParmigianaConstants} from "../chains/Parmigiana.sol";
+import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 
 abstract contract SignetL1 {
     using SafeERC20 for IERC20;
 
     /// @notice Sentinel value for the native asset in order inputs/outputs
     address constant NATIVE_ASSET = address(0);
+
+    /// @notice The chain ID of the host network.
+    uint256 immutable HOST_CHAIN_ID;
 
     /// @notice The Passage address
     Passage internal immutable PASSAGE;
@@ -43,19 +45,9 @@ abstract contract SignetL1 {
 
     constructor() {
         uint256 chainId = block.chainid;
-        if (chainId == PecorinoConstants.HOST_CHAIN_ID) {
-            PASSAGE = PecorinoConstants.HOST_PASSAGE;
-            ORDERS = PecorinoConstants.HOST_ORDERS;
+        if (chainId == ParmigianaConstants.HOST_CHAIN_ID) {
+            HOST_CHAIN_ID = ParmigianaConstants.HOST_CHAIN_ID;
 
-            WETH = IWETH(PecorinoConstants.HOST_WETH);
-            WBTC = IERC20(PecorinoConstants.HOST_WBTC);
-            USDC = IERC20(PecorinoConstants.HOST_USDC);
-            USDT = IERC20(PecorinoConstants.HOST_USDT);
-
-            RU_WUSD = address(PecorinoConstants.WUSD);
-            RU_WBTC = address(PecorinoConstants.WBTC);
-            RU_WETH = address(PecorinoConstants.WETH);
-        } else if (chainId == ParmigianaConstants.HOST_CHAIN_ID) {
             PASSAGE = ParmigianaConstants.HOST_PASSAGE;
             ORDERS = ParmigianaConstants.HOST_ORDERS;
 
@@ -96,13 +88,14 @@ abstract contract SignetL1 {
     /// @notice Helper to create an output struct.
     function makeOutput(address token, uint256 amount, address recipient)
         internal
-        pure
+        view
         returns (HostOrders.Output memory output)
     {
         output.token = token;
         output.amount = amount;
         output.recipient = recipient;
-        output.chainId = PecorinoConstants.HOST_CHAIN_ID;
+        // forge-lint: disable-next-line(unsafe-typecast)
+        output.chainId = uint32(HOST_CHAIN_ID);
     }
 
     /// @notice Helper to create an Output struct for usdc.
@@ -126,7 +119,7 @@ abstract contract SignetL1 {
     }
 
     /// @notice Helper to create an Output struct for eth.
-    function ethOutput(uint256 amount, address recipient) internal pure returns (HostOrders.Output memory output) {
+    function ethOutput(uint256 amount, address recipient) internal view returns (HostOrders.Output memory output) {
         return makeOutput(NATIVE_ASSET, amount, recipient);
     }
 
