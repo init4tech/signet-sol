@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 import {RollupPassage} from "zenith/src/passage/RollupPassage.sol";
+import {HostOrders} from "zenith/src/orders/HostOrders.sol";
+import {Passage} from "zenith/src/passage/Passage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /// @title PecorinoConstants
@@ -15,6 +17,12 @@ library PecorinoConstants {
     uint32 constant HOST_CHAIN_ID = 3151908;
     /// @notice The Pecorino Rollup chain ID.
     uint32 constant ROLLUP_CHAIN_ID = 14174;
+
+    /// @notice The Passage contract for the Pecorino testnet host chain.
+    Passage constant HOST_PASSAGE = Passage(payable(0x12585352AA1057443D6163B539EfD4487f023182));
+
+    /// @notice The HostOrders contract for the Pecorino testnet host chain.
+    HostOrders constant HOST_ORDERS = HostOrders(0x0A4f505364De0Aa46c66b15aBae44eBa12ab0380);
 
     /// @notice The Rollup Passage contract for the Pecorino testnet.
     RollupPassage constant PECORINO_ROLLUP_PASSAGE = RollupPassage(payable(0x0000000000007369676E65742D70617373616765));

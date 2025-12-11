@@ -55,7 +55,7 @@ contract SignetL2 {
             HOST_WBTC = PecorinoConstants.HOST_WBTC;
             HOST_WETH = PecorinoConstants.HOST_WETH;
         } else {
-            revert("Unsupported chain");
+            revert UnsupportedChain(block.chainid);
         }
     }
 
