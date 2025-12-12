@@ -22,12 +22,12 @@ abstract contract BridgeL2 is SignetL2, BurnMintERC20 {
 
     /// @notice Bridges assets into the rollup for a given recipient.
     function _bridgeIn(address recipient, uint256 amount, RollupOrders.Input[] memory inputs) internal virtual {
+        _mint(recipient, amount);
+
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = makeHostOutput(HOST_ASSET, amount, HOST_BANK);
 
         ORDERS.initiate(block.timestamp, inputs, outputs);
-
-        _mint(recipient, amount);
     }
 
     /// @notice Bridges assets into the rollup for a given recipient.
@@ -40,21 +40,38 @@ abstract contract BridgeL2 is SignetL2, BurnMintERC20 {
     ///
     /// This transaction should be paired with some off-chain logic that fills
     /// orders from the L1 bank.
-    function _bridgeOut(address recipient, uint256 amount, RollupOrders.Input[] memory inputs) internal virtual {
+    function _bridgeOut(address sender, address recipient, uint256 amount, RollupOrders.Input[] memory inputs)
+        internal
+        virtual
+    {
+        if (_msgSender() != sender) {
+            _spendAllowance(sender, _msgSender(), amount);
+        }
+
+        _burn(msg.sender, amount);
+
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = makeHostOutput(HOST_ASSET, amount, recipient);
 
         ORDERS.initiate(block.timestamp, inputs, outputs);
-
-        _burn(msg.sender, amount);
     }
 
-    /// @notice Burn asset on L2, and create an order to bridge out asset to
+    /// @notice Burn asset on L2, and create an order to bridge out assets to
     /// L1. If the order is not filled, the asset will not be burned.
     ///
     /// This transaction should be paired with some off-chain logic that fills
     /// orders from the L1 bank.
     function bridgeOut(address recipient, uint256 amount) public virtual {
-        _bridgeOut(recipient, amount, new RollupOrders.Input[](0));
+        _bridgeOut(msg.sender, recipient, amount, new RollupOrders.Input[](0));
+    }
+
+    /// @notice Burn asset on L2 from `sender`, and create an order to bridge
+    /// out assets to L1. If the order is not filled, the asset will not be
+    /// burned. Used when the caller is not the sender.
+    ///
+    /// This transaction should be paired with some off-chain logic that fills
+    /// orders from the L1 bank.
+    function bridgeOutFrom(address sender, address recipient, uint256 amount) public virtual {
+        _bridgeOut(sender, recipient, amount, new RollupOrders.Input[](0));
     }
 }

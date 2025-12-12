@@ -7,6 +7,3 @@
 [submodule "lib/zenith"]
 	path = lib/zenith
 	url = https://github.com/init4tech/zenith
-[submodule "lib/simple-erc20"]
-	path = lib/simple-erc20
-	url = https://github.com/init4tech/simple-erc20
