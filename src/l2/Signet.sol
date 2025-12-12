@@ -2,13 +2,12 @@
 pragma solidity ^0.8.13;
 
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
-import {RollupPassage} from "zenith/src/passage/RollupPassage.sol";
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+import {RollupConstants} from "../chains/L2.sol";
 import {ParmigianaConstants} from "../chains/Parmigiana.sol";
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 
-contract SignetL2 {
+contract SignetL2 is RollupConstants {
     /// @notice Sentinal value for the native asset in order inputs/outputs
     address constant NATIVE_ASSET = address(0);
 
@@ -18,20 +17,8 @@ contract SignetL2 {
     /// @notice The chain ID of the host network.
     uint32 internal immutable HOST_CHAIN_ID;
 
-    /// @notice The Rollup Passage contract.
-    RollupPassage internal immutable PASSAGE;
-    /// @notice The Rollup Orders contract.
-    RollupOrders internal immutable ORDERS;
-
     /// @notice The address of the Rollup Passage on the host network.
     address immutable HOST_PASSAGE;
-
-    /// @notice The WETH token address.
-    IERC20 internal immutable WETH;
-    /// @notice The WBTC token address.
-    IERC20 internal immutable WBTC;
-    /// @notice The WUSD token address.
-    IERC20 internal immutable WUSD;
 
     /// @notice The USDC token address on the host network.
     address internal immutable HOST_USDC;
@@ -51,13 +38,6 @@ contract SignetL2 {
             HOST_CHAIN_ID = ParmigianaConstants.HOST_CHAIN_ID;
 
             HOST_PASSAGE = address(ParmigianaConstants.HOST_PASSAGE);
-
-            PASSAGE = ParmigianaConstants.ROLLUP_PASSAGE;
-            ORDERS = ParmigianaConstants.ROLLUP_ORDERS;
-
-            WETH = ParmigianaConstants.WETH;
-            WBTC = ParmigianaConstants.WBTC;
-            WUSD = ParmigianaConstants.WUSD;
 
             HOST_USDC = ParmigianaConstants.HOST_USDC;
             HOST_USDT = ParmigianaConstants.HOST_USDT;
@@ -91,12 +71,15 @@ contract SignetL2 {
         input.amount = amount;
     }
 
-    function makeWethInput(uint256 amount) internal view returns (RollupOrders.Input memory input) {
+    /// @notice Creates an Input struct for the WETH token.
+    /// @param amount The amount of WETH.
+    /// @return input The created Input struct for WETH.
+    function makeWethInput(uint256 amount) internal pure returns (RollupOrders.Input memory input) {
         input.token = address(WETH);
         input.amount = amount;
     }
 
-    function makeWbtcInput(uint256 amount) internal view returns (RollupOrders.Input memory input) {
+    function makeWbtcInput(uint256 amount) internal pure returns (RollupOrders.Input memory input) {
         input.token = address(WBTC);
         input.amount = amount;
     }

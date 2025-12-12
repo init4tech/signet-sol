@@ -55,10 +55,6 @@ abstract contract SignetL1 {
             WBTC = IERC20(ParmigianaConstants.HOST_WBTC);
             USDC = IERC20(ParmigianaConstants.HOST_USDC);
             USDT = IERC20(ParmigianaConstants.HOST_USDT);
-
-            RU_WUSD = address(ParmigianaConstants.WUSD);
-            RU_WBTC = address(ParmigianaConstants.WBTC);
-            RU_WETH = address(ParmigianaConstants.WETH);
         } else {
             revert UnsupportedChain(block.chainid);
         }
