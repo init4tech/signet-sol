@@ -1,10 +1,4 @@
 {
-  "lib/zenith": {
-    "tag": {
-      "name": "v0.1.55",
-      "rev": "914146a3904541192f2cb0906c0990cc6f90b1e3"
-    }
-  },
   "lib/forge-std": {
     "tag": {
       "name": "v1.10.0",
@@ -15,6 +9,15 @@
     "tag": {
       "name": "v5.4.0",
       "rev": "c64a1edb67b6e3f4a15cca8909c9482ad33a02b0"
+    }
+  },
+  "lib/simple-erc20": {
+    "rev": "f5c2597ec179ea13e219ccbca415dc59d5a33398"
+  },
+  "lib/zenith": {
+    "tag": {
+      "name": "v0.1.55",
+      "rev": "914146a3904541192f2cb0906c0990cc6f90b1e3"
     }
   }
 }

@@ -30,7 +30,7 @@ contract GetOut is SignetL2 {
         uint256 desired = msg.value * 995 / 1000; // 0.5% fee
 
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
-        inputs[0] = makeEthInput(msg.value);
+        inputs[0] = makeUsdInput(msg.value);
 
         RollupOrders.Output[] memory outputs = new RollupOrders.Output[](1);
         outputs[0] = hostUsdcOutput(desired, msg.sender);

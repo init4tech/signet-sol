@@ -25,10 +25,10 @@ library PecorinoConstants {
     HostOrders constant HOST_ORDERS = HostOrders(0x0A4f505364De0Aa46c66b15aBae44eBa12ab0380);
 
     /// @notice The Rollup Passage contract for the Pecorino testnet.
-    RollupPassage constant PECORINO_ROLLUP_PASSAGE = RollupPassage(payable(0x0000000000007369676E65742D70617373616765));
+    RollupPassage constant ROLLUP_PASSAGE = RollupPassage(payable(0x0000000000007369676E65742D70617373616765));
 
     /// @notice The Rollup Orders contract for the Pecorino testnet.
-    RollupOrders constant PECORINO_ROLLUP_ORDERS = RollupOrders(0x000000000000007369676E65742D6f7264657273);
+    RollupOrders constant ROLLUP_ORDERS = RollupOrders(0x000000000000007369676E65742D6f7264657273);
 
     /// USDC token for the Pecorino testnet host chain.
     address constant HOST_USDC = 0x65Fb255585458De1F9A246b476aa8d5C5516F6fd;
