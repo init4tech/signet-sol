@@ -35,8 +35,8 @@ contract LidoL2 is BridgeL2 {
 
     /// @notice Transfer WETH from `funder`, create an order to convert it to
     /// wstETH on L1 and bridge it to L2, and mint stETH to `recipient`.
-    function enter(address funder, uint256 amountIn, address recipient, uint256 amountOut) external {
-        WETH.safeTransferFrom(funder, address(this), amountIn);
+    function enter(uint256 amountIn, address recipient, uint256 amountOut) external {
+        WETH.safeTransferFrom(msg.sender, address(this), amountIn);
 
         RollupOrders.Input[] memory inputs = new RollupOrders.Input[](1);
         inputs[0] = makeWethInput(amountIn);
