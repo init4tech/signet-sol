@@ -3,8 +3,7 @@ pragma solidity ^0.8.13;
 
 import {BurnMintERC20} from "../src/vendor/BurnMintERC20.sol";
 
-import {PecorinoTest} from "./Base.sol";
-
+import {ParmigianaTest} from "./Base.sol";
 import {SignetL2} from "../src/l2/Signet.sol";
 import {SelfOwned} from "../src/l2/SelfOwned.sol";
 import {AddressAliasHelper} from "../src/vendor/AddressAliasHelper.sol";
@@ -20,7 +19,7 @@ contract SelfOwnedToken is SignetL2, BurnMintERC20 {
     }
 }
 
-contract TestSelfOwned is PecorinoTest {
+contract TestSelfOwned is ParmigianaTest {
     SelfOwnedToken token;
 
     SelfOwnedNothing nothing;

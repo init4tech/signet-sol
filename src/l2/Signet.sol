@@ -5,7 +5,7 @@ import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 import {RollupPassage} from "zenith/src/passage/RollupPassage.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import {PecorinoConstants} from "../chains/Pecorino.sol";
+import {ParmigianaConstants} from "../chains/Parmigiana.sol";
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 
 contract SignetL2 {
@@ -47,22 +47,22 @@ contract SignetL2 {
 
     constructor() {
         // Auto-configure based on the chain ID.
-        if (block.chainid == PecorinoConstants.ROLLUP_CHAIN_ID) {
-            HOST_CHAIN_ID = PecorinoConstants.HOST_CHAIN_ID;
+        if (block.chainid == ParmigianaConstants.ROLLUP_CHAIN_ID) {
+            HOST_CHAIN_ID = ParmigianaConstants.HOST_CHAIN_ID;
 
-            HOST_PASSAGE = address(PecorinoConstants.HOST_PASSAGE);
+            HOST_PASSAGE = address(ParmigianaConstants.HOST_PASSAGE);
 
-            PASSAGE = PecorinoConstants.ROLLUP_PASSAGE;
-            ORDERS = PecorinoConstants.ROLLUP_ORDERS;
+            PASSAGE = ParmigianaConstants.ROLLUP_PASSAGE;
+            ORDERS = ParmigianaConstants.ROLLUP_ORDERS;
 
-            WETH = PecorinoConstants.WETH;
-            WBTC = PecorinoConstants.WBTC;
-            WUSD = PecorinoConstants.WUSD;
+            WETH = ParmigianaConstants.WETH;
+            WBTC = ParmigianaConstants.WBTC;
+            WUSD = ParmigianaConstants.WUSD;
 
-            HOST_USDC = PecorinoConstants.HOST_USDC;
-            HOST_USDT = PecorinoConstants.HOST_USDT;
-            HOST_WBTC = PecorinoConstants.HOST_WBTC;
-            HOST_WETH = PecorinoConstants.HOST_WETH;
+            HOST_USDC = ParmigianaConstants.HOST_USDC;
+            HOST_USDT = ParmigianaConstants.HOST_USDT;
+            HOST_WBTC = ParmigianaConstants.HOST_WBTC;
+            HOST_WETH = ParmigianaConstants.HOST_WETH;
         } else {
             revert UnsupportedChain(block.chainid);
         }
