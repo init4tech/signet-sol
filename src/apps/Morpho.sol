@@ -237,7 +237,7 @@ contract HostMorphoSupply is HostMorphoUser {
     }
 }
 
-contract HosyMorphoBorrow is HostMorphoUser {
+contract HostMorphoBorrow is HostMorphoUser {
     constructor(IMorpho _morpho, MarketParams memory _params) HostMorphoUser(_morpho, _params) {}
 
     // This function
