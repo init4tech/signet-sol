@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {RollupOrders} from "zenith/src/orders/RollupOrders.sol";
 
 import {RollupConstants} from "../chains/L2.sol";
+import {GoudaConstants} from "../chains/Gouda.sol";
 import {ParmigianaConstants} from "../chains/Parmigiana.sol";
 import {AddressAliasHelper} from "../vendor/AddressAliasHelper.sol";
 
@@ -43,6 +44,15 @@ contract SignetL2 is RollupConstants {
             HOST_USDT = ParmigianaConstants.HOST_USDT;
             HOST_WBTC = ParmigianaConstants.HOST_WBTC;
             HOST_WETH = ParmigianaConstants.HOST_WETH;
+        } else if (block.chainid == GoudaConstants.ROLLUP_CHAIN_ID) {
+            HOST_CHAIN_ID = GoudaConstants.HOST_CHAIN_ID;
+
+            HOST_PASSAGE = address(GoudaConstants.HOST_PASSAGE);
+
+            HOST_USDC = GoudaConstants.HOST_USDC;
+            HOST_USDT = GoudaConstants.HOST_USDT;
+            HOST_WBTC = GoudaConstants.HOST_WBTC;
+            HOST_WETH = GoudaConstants.HOST_WETH;
         } else {
             revert UnsupportedChain(block.chainid);
         }
